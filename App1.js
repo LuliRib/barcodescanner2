@@ -1,5 +1,6 @@
+import { StatusBar } from "expo-status-bar";
 import React, { useState, useEffect } from "react";
-import { Text, View, StyleSheet, Button } from "react-native";
+import { StyleSheet, Text, View, Button } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
 
 export default function App() {
@@ -8,33 +9,44 @@ export default function App() {
   const [text, setText] = useState("Not yet scanned");
 
   const askForCameraPermission = () => {
-    (async () => {
+    const getBarCodeScannerPermissions = async () => {
       const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(true /* status === "granted" */);
-      console.log("ask for cam permission ", status);
-    })();
+      console.log("Stat ", status);
+      setHasPermission(status === "granted");
+    };
+
+    getBarCodeScannerPermissions();
+    /* (async () => {
+      const { status } = await BarCodeScanner.requestPermissionsAsync();
+      console.log("status ", status);
+      setHasPermission(status === "granted");
+    })(); */
+    console.log("clicked");
   };
 
-  // Request Camera Permission
+  //Request camera permission
   useEffect(() => {
     askForCameraPermission();
   }, []);
 
-  // What happens when we scan the bar code
+  //What happens when we san the barcode
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
     setText(data);
     console.log("Type: " + type + "\nData: " + data);
   };
 
-  // Check permissions and return the screens
+  //Check permissions and return the screens
+
   if (hasPermission === null) {
+    console.log("has permission ?? ", hasPermission);
     return (
       <View style={styles.container}>
         <Text>Requesting for camera permission</Text>
       </View>
     );
   }
+
   if (hasPermission === false) {
     return (
       <View style={styles.container}>
@@ -46,25 +58,13 @@ export default function App() {
       </View>
     );
   }
-
-  // Return the View
   return (
     <View style={styles.container}>
-      <View style={styles.barcodebox}>
-        <BarCodeScanner
-          onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-          style={{ height: 400, width: 400 }}
-        />
-      </View>
-      <Text style={styles.maintext}>{text}</Text>
-
-      {scanned && (
-        <Button
-          title={"Scan again?"}
-          onPress={() => setScanned(false)}
-          color="tomato"
-        />
-      )}
+      <BarCodeScanner
+        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+        style={styles.barcodebox}
+      />
+      {/* <View style={styles.barcodebox}></View> */}
     </View>
   );
 }
